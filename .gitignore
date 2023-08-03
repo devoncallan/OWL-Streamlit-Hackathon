@@ -1,3 +1,4 @@
 .streamlit/
 __pycache__/
 test.ipynb
+.DS_Store

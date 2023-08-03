@@ -6,12 +6,14 @@ Connect to the Battle.net [Overwatch League API](https://develop.battle.net/docu
 
 1. Follow this [Getting Started](https://develop.battle.net/documentation/guides/getting-started) guide to create a Battle.net client and generate a client secret.
 2. Store the client credentials (client_id and client_secret) in .streamlit/secrets.toml (more information [here](https://docs.streamlit.io/streamlit-community-cloud/get-started/deploy-an-app/connect-to-data-sources/secrets-management)). These will be exchanged for an access token through the OAuth client credentials flow.
+3. (Optional) Store your region in .streamlit/secrets.toml. If not specified, the default region is us (more information [here](https://develop.battle.net/documentation/guides/regionality-and-apis))
 
 `.streamlit/secrets.toml`
-```toml
+```
 [connections.OWL]
-client_id = YOUR_CLIENT_ID
-client_secret = YOUR_CLIENT_SECRET
+region = 'us' # options: 'us', 'eu', 'kr', 'tw', and 'cn'
+client_id = 'YOUR_CLIENT_ID'
+client_secret = 'YOUR_CLIENT_SECRET'
 ```
 
 ## Usage

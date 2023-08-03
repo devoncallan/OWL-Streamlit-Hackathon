@@ -5,6 +5,19 @@ from requests.adapters import HTTPAdapter, Retry
 from os import path
 import time
 
+# URLs for API and OAuth flow
+API_URL      = 'https://{0}.api.blizzard.com/'
+API_URL_CN   = 'https://gateway.battlenet.com.cn/'
+OAUTH_URL    = 'https://oauth.battle.net/token'
+OAUTH_URL_CN = 'https://oauth.battlenet.com.cn/token'
+
+# Paths to data for API access
+SUMMARY_DATA_PATH = 'owl/v1/owl2'
+PLAYER_DATA_PATH  = 'owl/v1/players/{0}'
+MATCH_DATA_PATH   = 'owl/v1/matches/{0}'
+SEGMENT_DATA_PATH = 'owl/v1/segments/{0}'
+TEAM_DATA_PATH    = 'owl/v1/teams/{0}'
+
 class OWLConnection(ExperimentalBaseConnection[requests.Session]):
 
     def _connect(self, **kwargs) -> requests.Session:
@@ -15,7 +28,18 @@ class OWLConnection(ExperimentalBaseConnection[requests.Session]):
         Returns:
             requests.Session: the requests session object.
         """
-        oauth_url = self._secrets['oauth_url']
+        if 'region' not in self._secrets: 
+            self.oauth_url = OAUTH_URL.format('us')
+            self.api_url = API_URL.format('us')
+        elif self._secrets['region'] in ['us', 'eu', 'kr', 'tw']:
+            self.oauth_url = OAUTH_URL.format(self._secrets['region'])
+            self.api_url = API_URL.format(self._secrets['region'])
+        elif self._secrets['region'] == 'cn':
+            self.oauth_url = OAUTH_URL_CN
+            self.api_URL = API_URL_CN
+        else:
+            raise Exception('Region in .streamlit/secrets.toml is not valid. Valid regions are us, eu, kr, tw, and cn.')
+
         client_id = self._secrets['client_id']
         client_secret = self._secrets['client_secret']
         query_params = {'grant_type': 'client_credentials'}
@@ -25,7 +49,7 @@ class OWLConnection(ExperimentalBaseConnection[requests.Session]):
         session.mount('http://', HTTPAdapter(max_retries=retries))
         
         response = session.post(
-            url=oauth_url,
+            url=self.oauth_url,
             params=query_params,
             auth=(client_id, client_secret)
         )
@@ -77,8 +101,7 @@ class OWLConnection(ExperimentalBaseConnection[requests.Session]):
             dict: 
         """
         
-        url = path.join(self._secrets['api_url'], self._secrets['paths']['summary_data'])
-        # summary_response = self.get(url=url, ttl=ttl)
+        url = path.join(self.api_url, SUMMARY_DATA_PATH)
         summary_data = dict(self.get(url=url).json())
         return summary_data
     
@@ -89,7 +112,7 @@ class OWLConnection(ExperimentalBaseConnection[requests.Session]):
         Returns:
             dict: 
         """
-        url = path.join(self._secrets['api_url'], self._secrets['paths']['player_data'])
+        url = path.join(self.api_url, PLAYER_DATA_PATH)
         url = url.format(player_id)
         player_data = dict(self.get(url=url).json())
         return player_data
@@ -102,7 +125,7 @@ class OWLConnection(ExperimentalBaseConnection[requests.Session]):
             dict: 
         """
 
-        url = path.join(self._secrets['api_url'], self._secrets['paths']['match_data'])
+        url = path.join(self.api_url, MATCH_DATA_PATH)
         url = url.format(match_id)
         match_data = dict(self.get(url=url).json())
         return match_data
@@ -115,7 +138,7 @@ class OWLConnection(ExperimentalBaseConnection[requests.Session]):
             dict: 
         """
 
-        url = path.join(self._secrets['api_url'], self._secrets['paths']['segment_data'])
+        url = path.join(self.api_url, SEGMENT_DATA_PATH)
         url = url.format(segment_id)
         segment_data = self.get(url=url).json()
         return segment_data
@@ -128,7 +151,7 @@ class OWLConnection(ExperimentalBaseConnection[requests.Session]):
             dict:
         """
 
-        url = path.join(self._secrets['api_url'], self._secrets['paths']['team_data'])
+        url = path.join(self.api_url, TEAM_DATA_PATH)
         url = url.format(team_id)
         team_data = dict(self.get(url=url).json())
         return team_data
