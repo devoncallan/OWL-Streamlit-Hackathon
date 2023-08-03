@@ -130,6 +130,5 @@ class OWLConnection(ExperimentalBaseConnection[requests.Session]):
 
         url = path.join(self._secrets['api_url'], self._secrets['paths']['team_data'])
         url = url.format(team_id)
-        print(self.get(url).content)
         team_data = dict(self.get(url=url).json())
         return team_data
