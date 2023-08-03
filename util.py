@@ -33,7 +33,7 @@ STANDINGS_TEXT_SIZE = '####'
 FONT_SIZE = 20
 FONT_FAMILY = 'Arial'
 FONT_WEIGHT = 'Bold'
-FORMAT_BLACK = f'<p style="font-weight:{FONT_WEIGHT}; color:Black; font-size: {FONT_SIZE}px; font-family:{FONT_FAMILY}">'
+FORMAT_NORMAL = f'<p style="font-weight:{FONT_WEIGHT};              font-size: {FONT_SIZE}px; font-family:{FONT_FAMILY}">'
 FORMAT_RED   = f'<p style="font-weight:{FONT_WEIGHT}; color:Red;   font-size: {FONT_SIZE}px; font-family:{FONT_FAMILY}">'
 FORMAT_GREEN = f'<p style="font-weight:{FONT_WEIGHT}; color:Green; font-size: {FONT_SIZE}px; font-family:{FONT_FAMILY}">'
 
@@ -160,14 +160,14 @@ def standings_card(c: st.container, standing_df):
 
     rank_col, icon_col, team_name_col, win_col, loss_col, win_per_col, map_wlt_col, diff_col = c.columns(STANDINGS_WIDTH)
 
-    format_markdown(rank_col, int(standing_df['#']), FORMAT_BLACK)
+    format_markdown(rank_col, int(standing_df['#']), FORMAT_NORMAL)
     icon_col.image(standing_df['ICON'], width=30)
 
-    format_markdown(team_name_col, standing_df['TEAM'], FORMAT_BLACK)
-    format_markdown(win_col, int(standing_df['W']), FORMAT_BLACK)
-    format_markdown(loss_col, int(standing_df['L']), FORMAT_BLACK)
-    format_markdown(win_per_col, standing_df['WIN%'], FORMAT_BLACK)
-    format_markdown(map_wlt_col, standing_df['MAP W-L-T'], FORMAT_BLACK)
+    format_markdown(team_name_col, standing_df['TEAM'], FORMAT_NORMAL)
+    format_markdown(win_col, int(standing_df['W']), FORMAT_NORMAL)
+    format_markdown(loss_col, int(standing_df['L']), FORMAT_NORMAL)
+    format_markdown(win_per_col, standing_df['WIN%'], FORMAT_NORMAL)
+    format_markdown(map_wlt_col, standing_df['MAP W-L-T'], FORMAT_NORMAL)
     diff = int(standing_df['DIFF'])
     diff_str = str(diff)
     if diff > 0:
