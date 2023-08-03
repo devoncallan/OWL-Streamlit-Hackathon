@@ -1,10 +1,11 @@
 import streamlit as st
 from streamlit.connections import ExperimentalBaseConnection
 import requests
+from requests.adapters import HTTPAdapter, Retry
 from os import path
 import time
 
-class BlizzardConnection(ExperimentalBaseConnection[requests.Session]):
+class OWLConnection(ExperimentalBaseConnection[requests.Session]):
 
     def _connect(self, **kwargs) -> requests.Session:
         """
@@ -20,6 +21,8 @@ class BlizzardConnection(ExperimentalBaseConnection[requests.Session]):
         query_params = {'grant_type': 'client_credentials'}
 
         session = requests.Session()
+        retries = Retry(total=5, backoff_factor=0.1, status_forcelist=[429, 500, 502, 503, 504])
+        session.mount('http://', HTTPAdapter(max_retries=retries))
         
         response = session.post(
             url=oauth_url,
@@ -27,7 +30,6 @@ class BlizzardConnection(ExperimentalBaseConnection[requests.Session]):
             auth=(client_id, client_secret)
         )
         self._access_token = response.json()['access_token']
-        st.write(self._access_token)
 
         return session
     
@@ -61,37 +63,10 @@ class BlizzardConnection(ExperimentalBaseConnection[requests.Session]):
         response = _get(url)
         
         if response.status_code == 200:
-            time.sleep(0.05)
+            time.sleep(0.2)
             return response
-        elif response.status_code == 429:
-            # st.write(response.json())
-            # print(response.json())
-            raise Exception(f'Failed to fetch data from {url} with error code {response.status_code}.') 
         else:
             raise Exception(f'Failed to fetch data from {url} with error code {response.status_code}.')
-        # num_retries = 3
-        # for i in range(num_retries):
-
-        #     response = _get(url)
-        #     if response.status_code == 200:
-        #         return response
-        #     elif response.status_code == 427:
-        #         time.sleep(1)
-        #     else:
-        #         print(response.status_code)
-        #         raise Exception(f'Failed to fetch data from {url}.')
-        # raise Exception(f'Failed to fetch data from {url}.')
-        # response = _get(url)
-        
-        # # If the GET request is successful, the status_code will be 200
-        # if response.status_code == 200:
-        #     time.sleep(0.1)
-        #     return response
-        # if response.status_code == 427:
-        #     time.sleep(1)
-        # else:
-        #     print(response.status_code)
-        #     raise Exception(f'Failed to fetch data from {url}.')
 
     def get_summary_data(self) -> dict:
         """
@@ -155,5 +130,6 @@ class BlizzardConnection(ExperimentalBaseConnection[requests.Session]):
 
         url = path.join(self._secrets['api_url'], self._secrets['paths']['team_data'])
         url = url.format(team_id)
+        print(self.get(url).content)
         team_data = dict(self.get(url=url).json())
         return team_data

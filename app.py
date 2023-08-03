@@ -1,27 +1,53 @@
 import streamlit as st
-from connection import BlizzardConnection
-import pandas as pd
-from util import get_standings_df
+from connection import OWLConnection
+import util
 
-st.title('Overwatch League Standings')
-conn = st.experimental_connection('blizzard', type=BlizzardConnection)
+st.title('Overwatch League Data')
+st.markdown('##### Author: Devon Callan')
+st.markdown('###### Made for streamlit connections hackathon.')
+st.divider()
 
+# Set up connection to OWL API
+conn = st.experimental_connection('OWL', type=OWLConnection)
+
+# Initialize team data
+util.initialize(conn)
+
+# Get summary data from OWL api
 summary = conn.get_summary_data()
-current_segments = summary['currentSegments']
+segments = list(summary['segments'].keys())
+segments = [segment for segment in segments if segment not in util.BLACKLIST_SEGMENTS]
 
-segment_data = conn.get_segment_data(segment_id='owl2-2023-midseason-madness-tournament-qualifiers')
+# Select OWL season
+st.header('Select data to visualize')
+options=['2022', '2023']
+selected_year = st.selectbox('Select a season.', options=options)
+segments = [segment for segment in segments if selected_year in segment]
 
+# Select OWL segment
+selected_segment = st.selectbox('Select a current segment.', options=segments)
 
-df = get_standings_df(conn, segment_id='owl2-2023-midseason-madness-tournament-qualifiers')
+# Get the east and west standings for the selected segment
+west_standings_df = util.get_standings_df(conn, segment_id=selected_segment, region='west')
+east_standings_df = util.get_standings_df(conn, segment_id=selected_segment, region='east')
 
-st.dataframe(
-    df,
-    column_config={
-        "LOGO": st.column_config.ImageColumn(
-            "LOGO"
-        )
-    },
-    hide_index=True,
-    use_container_width=False,
-    height = 35*(len(df)+1)+3
-)
+# Plot the standings dataframes
+if west_standings_df is None and east_standings_df is None:
+    st.error('No standings data for this segment.')
+    st.stop()
+if west_standings_df is not None:
+    c = st.container()
+    c.header('West')
+    util.plot_standings_data(c, west_standings_df)
+if east_standings_df is not None:
+    c = st.container()
+    c.header('East')
+    util.plot_standings_data(c, east_standings_df)
+
+# Get the team stats for the selected segment
+team_stats_df = util.get_team_stats_df(conn, segment_id=selected_segment)
+
+# Plot the team stats
+c = st.container()
+fig = util.plot_team_stats_data(c, team_stats_df)
+st.pyplot(fig)
