@@ -173,6 +173,8 @@ def standings_card(c: st.container, standing_df):
     if diff > 0:
         diff_str = '+' + diff_str
         format_markdown(diff_col, diff_str, FORMAT_GREEN)
+    elif diff == 0:
+        format_markdown(diff_col, diff_str, FORMAT_NORMAL)
     else:
         format_markdown(diff_col, diff_str, FORMAT_RED)
     c.divider()
