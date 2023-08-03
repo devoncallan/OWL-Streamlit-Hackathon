@@ -1,4 +1,4 @@
-# OWL-Streamlit-Hackathon
+# OWL Streamlit Connection
 
 Connect to the Battle.net [Overwatch League API](https://develop.battle.net/documentation/owl/community-apis) in a streamlit app using st.experimental_connection. Made for the Streamlit Connections Hackathon.
 
